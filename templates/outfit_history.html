@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Outfit History - StyleGuide AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">
+        Outfit <span class="text-gradient">Recommendation History</span>
+      </h2>
+      <p class="text-secondary small mb-0">
+        Review past AI styling consultations, footwear pairings, jewellery advice, and style scores.
+      </p>
+    </div>
+    <div>
+      <a href="{{ url_for('style') }}" class="btn btn-primary-gradient btn-sm">
+        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> New Consultation
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    {% for rec in recommendations %}
+    <div class="col-lg-6">
+      <div class="fashion-card h-100">
+        <div class="fashion-card-body p-4 d-flex flex-column justify-content-between h-100">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-fashion badge-purple">{{ rec.occasion }}</span>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge badge-fashion badge-pink">Style Score: {{ rec.style_score }}%</span>
+                <span class="text-muted small"><i class="fa-regular fa-clock me-1"></i> {{ rec.created_at.strftime('%b %d, %Y') }}</span>
+              </div>
+            </div>
+
+            <h5 class="fw-bold mb-2 text-truncate">{{ rec.selected_items_summary }}</h5>
+
+            <div class="small text-secondary mb-3 p-3 bg-light-subtle rounded-3 border">
+              <strong><i class="fa-solid fa-gem text-purple me-1"></i> Jewellery:</strong> {{ rec.jewellery_recommendation }}<br>
+              <strong class="d-inline-block mt-1"><i class="fa-solid fa-shoe-prints text-indigo me-1"></i> Footwear:</strong> {{ rec.footwear_recommendation }}<br>
+              <strong class="d-inline-block mt-1"><i class="fa-solid fa-bag-shopping text-pink me-1"></i> Accessory:</strong> {{ rec.accessory_recommendation }}
+            </div>
+
+            <p class="small text-secondary mb-0 line-clamp-3">
+              <strong>Why it works:</strong> {{ rec.why_it_works }}
+            </p>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-3">
+            <span class="badge bg-light text-secondary border small">{{ rec.color_compatibility }}</span>
+            
+            <button type="button" class="btn btn-sm btn-outline-gradient" data-bs-toggle="modal" data-bs-target="#recModal{{ rec.id }}">
+              <i class="fa-solid fa-expand me-1"></i> Full View
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendation Full Detail Modal -->
+    <div class="modal fade" id="recModal{{ rec.id }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header border-0 pb-0">
+            <div>
+              <span class="badge badge-fashion badge-purple mb-1">{{ rec.occasion }} Consultation</span>
+              <h5 class="modal-title fw-bold text-gradient">Style Consultation Breakdown</h5>
+              <small class="text-muted">Conducted on {{ rec.created_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body py-4">
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-4" style="background: var(--pink-light); border: 1px solid var(--pink-border);">
+              <div>
+                <h6 class="fw-bold mb-1">Selected Garments</h6>
+                <p class="text-secondary small mb-0">{{ rec.selected_items_summary }}</p>
+              </div>
+              <div class="score-circle" style="width: 65px; height: 65px;">
+                <span class="number" style="font-size: 1.25rem;">{{ rec.style_score }}%</span>
+                <span class="label">Fit</span>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <div class="p-3 border rounded-3 bg-light-subtle h-100">
+                  <h6 class="fw-bold text-purple mb-1"><i class="fa-solid fa-gem me-1"></i> Jewellery Recommendation</h6>
+                  <p class="small text-secondary mb-0">{{ rec.jewellery_recommendation }}</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 border rounded-3 bg-light-subtle h-100">
+                  <h6 class="fw-bold text-indigo mb-1"><i class="fa-solid fa-shoe-prints me-1"></i> Footwear Recommendation</h6>
+                  <p class="small text-secondary mb-0">{{ rec.footwear_recommendation }}</p>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="p-3 border rounded-3 bg-light-subtle">
+                  <h6 class="fw-bold text-pink mb-1"><i class="fa-solid fa-bag-shopping me-1"></i> Accessory Recommendation</h6>
+                  <p class="small text-secondary mb-0">{{ rec.accessory_recommendation }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 border rounded-3">
+              <h6 class="fw-bold text-pink mb-1"><i class="fa-solid fa-circle-question me-1"></i> Stylist Rationale</h6>
+              <p class="small text-secondary mb-0" style="line-height: 1.6;">{{ rec.why_it_works }}</p>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+      <div class="stat-icon purple mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.75rem;">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+      </div>
+      <h4 class="fw-bold mb-1">No Past Consultations Yet</h4>
+      <p class="text-secondary small mb-4" style="max-width: 440px; margin: 0 auto;">
+        Whenever you request recommendations in <em>"My Style"</em>, your styling records and rationale are archived here for future reference.
+      </p>
+      <a href="{{ url_for('style') }}" class="btn btn-primary-gradient">
+        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Get Your First Recommendation
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

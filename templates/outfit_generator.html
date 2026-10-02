@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}AI Outfit Generator - StyleGuide AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">
+        AI <span class="text-gradient">Outfit Generator</span>
+      </h2>
+      <p class="text-secondary small mb-0">
+        Let generative AI assemble head-to-toe coordinated outfits from your digital wardrobe.
+      </p>
+    </div>
+    <div>
+      <span class="badge badge-fashion badge-pink">Generative AI</span>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Generator Controls -->
+    <div class="col-lg-4">
+      <div class="fashion-card mb-4">
+        <div class="fashion-card-body p-4">
+          <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+            <span class="stat-icon purple" style="width: 34px; height: 34px; font-size: 0.95rem;"><i class="fa-solid fa-sliders"></i></span>
+            Styling Preferences
+          </h5>
+
+          <form action="{{ url_for('outfit_generator_generate') }}" method="POST">
+            <div class="mb-3">
+              <label for="occasionSelect" class="form-label small fw-bold text-secondary">Occasion *</label>
+              <select class="form-select" id="occasionSelect" name="occasion" required>
+                {% for occ in ['Casual', 'College', 'Office', 'Party', 'Wedding', 'Date', 'Festival', 'Interview', 'Travel', 'Traditional', 'Formal', 'Other'] %}
+                  <option value="{{ occ }}" {% if current_occasion == occ %}selected{% endif %}>{{ occ }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="seasonSelect" class="form-label small fw-bold text-secondary">Weather / Season</label>
+              <select class="form-select" id="seasonSelect" name="season">
+                {% for s in ['All-Season', 'Summer', 'Spring', 'Autumn', 'Winter'] %}
+                  <option value="{{ s }}" {% if current_season == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="colorSelect" class="form-label small fw-bold text-secondary">Preferred Color Palette</label>
+              <select class="form-select" id="colorSelect" name="preferred_color">
+                <option value="">Any Harmonious Color</option>
+                {% for col in ['Pink', 'Purple', 'White', 'Blue', 'Black', 'Red', 'Green', 'Yellow', 'Beige', 'Wine'] %}
+                  <option value="{{ col }}" {% if current_color == col %}selected{% endif %}>{{ col }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label for="styleSelect" class="form-label small fw-bold text-secondary">Preferred Aesthetic</label>
+              <select class="form-select" id="styleSelect" name="preferred_style">
+                <option value="">Any Aesthetic</option>
+                {% for sty in ['Casual', 'Smart Casual', 'Formal', 'Chic', 'Boho', 'Sporty', 'Traditional', 'Streetwear', 'Minimalist', 'Glam'] %}
+                  <option value="{{ sty }}" {% if current_style == sty %}selected{% endif %}>{{ sty }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary-gradient w-100 py-2 fs-6">
+              <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Generate Outfit Look
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generated Look Display -->
+    <div class="col-lg-8">
+      {% if outfit_result %}
+      <div class="fashion-card mb-4" style="border: 2px solid var(--purple-border);">
+        <div class="fashion-card-body p-4 p-md-5">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge badge-fashion badge-purple">{{ outfit_result.occasion }}</span>
+                <span class="badge badge-fashion badge-pink">{{ outfit_result.season }}</span>
+              </div>
+              <h3 class="fw-bold mb-0">AI Curated Ensemble</h3>
+              <small class="text-muted"><i class="fa-solid fa-sparkles text-gradient me-1"></i> {{ outfit_result.color_harmony }}</small>
+            </div>
+
+            <div class="score-circle">
+              <span class="number">{{ outfit_result.style_score }}%</span>
+              <span class="label">Synergy</span>
+            </div>
+          </div>
+
+          <!-- Items Grid in the Look -->
+          <div class="row g-3 mb-4">
+            <!-- Dress OR Top & Bottom -->
+            {% if outfit_result.dress %}
+            <div class="col-md-6">
+              <div class="p-3 border rounded-3 text-center bg-light-subtle h-100">
+                <span class="badge badge-fashion badge-pink mb-2">Statement Dress</span>
+                <div style="height: 140px; display: flex; align-items: center; justify-content: center;">
+                  <img src="{{ url_for('static', filename=outfit_result.dress.image_path) }}" alt="{{ outfit_result.dress.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                </div>
+                <h6 class="fw-bold mt-2 mb-0">{{ outfit_result.dress.name }}</h6>
+                <small class="text-muted">{{ outfit_result.dress.color }}</small>
+              </div>
+            </div>
+            {% else %}
+              {% if outfit_result.top %}
+              <div class="col-md-6">
+                <div class="p-3 border rounded-3 text-center bg-light-subtle h-100">
+                  <span class="badge badge-fashion badge-pink mb-2">Top Wear</span>
+                  <div style="height: 140px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ url_for('static', filename=outfit_result.top.image_path) }}" alt="{{ outfit_result.top.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                  </div>
+                  <h6 class="fw-bold mt-2 mb-0">{{ outfit_result.top.name }}</h6>
+                  <small class="text-muted">{{ outfit_result.top.color }}</small>
+                </div>
+              </div>
+              {% endif %}
+
+              {% if outfit_result.bottom %}
+              <div class="col-md-6">
+                <div class="p-3 border rounded-3 text-center bg-light-subtle h-100">
+                  <span class="badge badge-fashion badge-purple mb-2">Bottom Wear</span>
+                  <div style="height: 140px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ url_for('static', filename=outfit_result.bottom.image_path) }}" alt="{{ outfit_result.bottom.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                  </div>
+                  <h6 class="fw-bold mt-2 mb-0">{{ outfit_result.bottom.name }}</h6>
+                  <small class="text-muted">{{ outfit_result.bottom.color }}</small>
+                </div>
+              </div>
+              {% endif %}
+            {% endif %}
+
+            <!-- Footwear -->
+            <div class="col-md-4">
+              <div class="p-3 border rounded-3 text-center bg-light-subtle h-100">
+                <span class="badge badge-fashion badge-pink mb-2">Footwear</span>
+                {% if outfit_result.footwear %}
+                  <div style="height: 100px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ url_for('static', filename=outfit_result.footwear.image_path) }}" alt="{{ outfit_result.footwear.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                  </div>
+                  <h6 class="fw-bold mt-2 mb-0 small text-truncate">{{ outfit_result.footwear.name }}</h6>
+                {% else %}
+                  <div class="py-4 text-muted small">
+                    <i class="fa-solid fa-shoe-prints fs-3 text-muted mb-2 d-block"></i>
+                    <em>Pair with {{ outfit_result.guideline.footwear[0] }}</em>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Jewellery -->
+            <div class="col-md-4">
+              <div class="p-3 border rounded-3 text-center bg-light-subtle h-100">
+                <span class="badge badge-fashion badge-purple mb-2">Jewellery</span>
+                {% if outfit_result.jewellery %}
+                  <div style="height: 100px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ url_for('static', filename=outfit_result.jewellery.image_path) }}" alt="{{ outfit_result.jewellery.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                  </div>
+                  <h6 class="fw-bold mt-2 mb-0 small text-truncate">{{ outfit_result.jewellery.name }}</h6>
+                {% else %}
+                  <div class="py-4 text-muted small">
+                    <i class="fa-solid fa-gem fs-3 text-muted mb-2 d-block"></i>
+                    <em>Pair with {{ outfit_result.guideline.jewellery[0] }}</em>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Accessory -->
+            <div class="col-md-4">
+              <div class="p-3 border rounded-3 text-center bg-light-subtle h-100">
+                <span class="badge badge-fashion badge-pink mb-2">Accessory</span>
+                {% if outfit_result.accessory %}
+                  <div style="height: 100px; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ url_for('static', filename=outfit_result.accessory.image_path) }}" alt="{{ outfit_result.accessory.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                  </div>
+                  <h6 class="fw-bold mt-2 mb-0 small text-truncate">{{ outfit_result.accessory.name }}</h6>
+                {% else %}
+                  <div class="py-4 text-muted small">
+                    <i class="fa-solid fa-bag-shopping fs-3 text-muted mb-2 d-block"></i>
+                    <em>Pair with {{ outfit_result.guideline.accessories[0] }}</em>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Fashion Rationale -->
+          <div class="p-3 rounded-3 mb-4" style="background: var(--pink-light); border: 1px solid var(--pink-border);">
+            <h6 class="fw-bold mb-1 text-pink"><i class="fa-solid fa-lightbulb me-1"></i> Stylist Note</h6>
+            <p class="small text-secondary mb-0">{{ outfit_result.reasoning }}</p>
+          </div>
+
+          <!-- Actions: Save Outfit, Try Another, Favorite -->
+          <div class="d-flex flex-wrap gap-2">
+            <form action="{{ url_for('outfit_save') }}" method="POST" class="flex-grow-1">
+              <input type="hidden" name="name" value="{{ outfit_result.occasion }} AI Look">
+              <input type="hidden" name="occasion" value="{{ outfit_result.occasion }}">
+              <input type="hidden" name="season" value="{{ outfit_result.season }}">
+              <input type="hidden" name="top_id" value="{{ outfit_result.top.id if outfit_result.top else '' }}">
+              <input type="hidden" name="bottom_id" value="{{ outfit_result.bottom.id if outfit_result.bottom else '' }}">
+              <input type="hidden" name="dress_id" value="{{ outfit_result.dress.id if outfit_result.dress else '' }}">
+              <input type="hidden" name="footwear_id" value="{{ outfit_result.footwear.id if outfit_result.footwear else '' }}">
+              <input type="hidden" name="jewellery_id" value="{{ outfit_result.jewellery.id if outfit_result.jewellery else '' }}">
+              <input type="hidden" name="accessory_id" value="{{ outfit_result.accessory.id if outfit_result.accessory else '' }}">
+              <input type="hidden" name="style_score" value="{{ outfit_result.style_score }}">
+              <input type="hidden" name="reasoning" value="{{ outfit_result.reasoning }}">
+              <input type="hidden" name="color_harmony" value="{{ outfit_result.color_harmony }}">
+              
+              <button type="submit" class="btn btn-primary-gradient w-100">
+                <i class="fa-solid fa-bookmark me-1"></i> Save Outfit
+              </button>
+            </form>
+
+            <a href="{{ url_for('outfit_generator') }}" class="btn btn-outline-gradient">
+              <i class="fa-solid fa-rotate-right me-1"></i> Try Another
+            </a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="fashion-card text-center p-5">
+        <div class="stat-icon purple mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.75rem;">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Automate Your Daily Wardrobe Styling</h4>
+        <p class="text-secondary small mb-4" style="max-width: 480px; margin: 0 auto;">
+          Choose your target occasion, season, or color palette on the left and click <strong>"Generate Outfit Look"</strong>. StyleGuide AI will orchestrate your best matching pieces into a runway-ready combination.
+        </p>
+        <form action="{{ url_for('outfit_generator_generate') }}" method="POST">
+          <input type="hidden" name="occasion" value="Casual">
+          <input type="hidden" name="season" value="All-Season">
+          <button type="submit" class="btn btn-primary-gradient">
+            <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Generate Instant Casual Look
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

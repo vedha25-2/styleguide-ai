@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - StyleGuide AI{% endblock %}
+
+{% block content %}
+<div class="container py-2" style="max-width: 920px;">
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">
+        My <span class="text-gradient">Profile</span>
+      </h2>
+      <p class="text-secondary small mb-0">Manage your fashion identity, personal demographics, and avatar.</p>
+    </div>
+    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">
+      <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Logout
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Avatar & Summary -->
+    <div class="col-md-4">
+      <div class="fashion-card text-center p-4 h-100">
+        <div class="position-relative d-inline-block mx-auto mb-3">
+          <img src="{{ url_for('static', filename=current_user.profile_image if current_user.profile_image.startswith('uploads/') or current_user.profile_image.startswith('images/') else 'images/' + current_user.profile_image) }}" 
+               alt="{{ current_user.full_name }}" 
+               class="rounded-circle shadow" 
+               style="width: 140px; height: 140px; object-fit: cover; border: 4px solid var(--pink-border);">
+        </div>
+
+        <h4 class="fw-bold mb-1">{{ current_user.full_name }}</h4>
+        <p class="text-muted small mb-3">{{ current_user.email }}</p>
+
+        <div class="d-flex justify-content-center gap-2 mb-4">
+          <span class="badge badge-fashion badge-pink">{{ current_user.gender }}</span>
+          {% if current_user.age %}
+            <span class="badge badge-fashion badge-purple">{{ current_user.age }} Years</span>
+          {% endif %}
+        </div>
+
+        <button type="button" class="btn btn-outline-gradient btn-sm w-100 mb-3" data-bs-toggle="modal" data-bs-target="#changePhotoModal">
+          <i class="fa-solid fa-camera me-1"></i> Change Profile Photo
+        </button>
+
+        <div class="p-3 bg-light-subtle rounded-3 text-start small border">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Wardrobe Pieces:</span>
+            <span class="fw-bold">{{ stats.total_items }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted">Saved Outfits:</span>
+            <span class="fw-bold">{{ stats.outfits_count }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Member Since:</span>
+            <span class="fw-bold">{{ current_user.created_at.strftime('%b %Y') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Edit Profile Form -->
+    <div class="col-md-8">
+      <div class="fashion-card">
+        <div class="fashion-card-body p-4 p-md-5">
+          <h4 class="fw-bold mb-4 pb-2 border-bottom">Edit Profile Information</h4>
+
+          <form action="{{ url_for('profile_update') }}" method="POST">
+            <div class="row g-3">
+              <div class="col-12">
+                <label for="full_name" class="form-label fw-bold small text-secondary">Full Name</label>
+                <input type="text" class="form-control" id="full_name" name="full_name" value="{{ current_user.full_name }}" required>
+              </div>
+
+              <div class="col-12">
+                <label for="email" class="form-label fw-bold small text-secondary">Email Address</label>
+                <input type="email" class="form-control bg-light" id="email" value="{{ current_user.email }}" readonly title="Email cannot be changed directly">
+                <small class="text-muted">Your registered account identifier.</small>
+              </div>
+
+              <div class="col-md-6">
+                <label for="gender" class="form-label fw-bold small text-secondary">Gender</label>
+                <select class="form-select" id="gender" name="gender">
+                  {% for g in ['Female', 'Male', 'Non-Binary', 'Prefer not to say'] %}
+                    <option value="{{ g }}" {% if current_user.gender == g %}selected{% endif %}>{{ g }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="age" class="form-label fw-bold small text-secondary">Age</label>
+                <input type="number" class="form-control" id="age" name="age" min="12" max="110" value="{{ current_user.age or '' }}">
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mt-4 pt-3 border-top">
+              <span class="small text-muted"><i class="fa-solid fa-shield-halved text-success me-1"></i> Data strictly isolated</span>
+              <button type="submit" class="btn btn-primary-gradient px-4">
+                <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Change Profile Photo Modal (Upload & Live Camera) -->
+<div class="modal fade" id="changePhotoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-gradient"><i class="fa-solid fa-camera me-2"></i> Update Profile Picture</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body py-4">
+        <form action="{{ url_for('profile_photo') }}" method="POST" enctype="multipart/form-data" id="profilePhotoForm">
+          <ul class="nav nav-pills mb-3" id="pfpTabs" role="tablist">
+            <li class="nav-item flex-fill text-center">
+              <button class="nav-link active rounded-pill w-100" id="pfp-upload-tab" data-bs-toggle="pill" data-bs-target="#pfpUploadPane" type="button">
+                <i class="fa-solid fa-cloud-arrow-up me-1"></i> Gallery
+              </button>
+            </li>
+            <li class="nav-item flex-fill text-center">
+              <button class="nav-link rounded-pill w-100" id="pfp-cam-tab" data-bs-toggle="pill" data-bs-target="#pfpCamPane" type="button">
+                <i class="fa-solid fa-camera me-1"></i> Camera
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="pfpTabContent">
+            <!-- Gallery Upload -->
+            <div class="tab-pane fade show active" id="pfpUploadPane">
+              <div class="border border-2 border-dashed rounded-3 p-4 text-center bg-light-subtle">
+                <i class="fa-regular fa-image text-pink fs-2 mb-2"></i>
+                <h6 class="fw-bold mb-1">Choose an image from your device</h6>
+                <input type="file" class="form-control mt-2" name="photo_file" id="pfpFileInput" accept="image/*">
+              </div>
+            </div>
+
+            <!-- WebRTC Live Camera -->
+            <div class="tab-pane fade" id="pfpCamPane">
+              <div id="pfpCamErrorBox" class="d-none"></div>
+              <div class="camera-container" style="min-height: 220px;">
+                <video id="pfpCamVideo" class="camera-preview-video" autoplay playsinline></video>
+                <canvas id="pfpCamCanvas" class="d-none"></canvas>
+
+                <div class="camera-controls-bar">
+                  <button type="button" class="btn btn-sm btn-light rounded-pill px-3 shadow" id="pfpStartCamBtn">
+                    <i class="fa-solid fa-power-off me-1"></i> Start Camera
+                  </button>
+                  <button type="button" class="shutter-btn d-none" id="pfpCaptureBtn">
+                    <i class="fa-solid fa-camera"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 shadow d-none" id="pfpStopCamBtn">
+                    <i class="fa-solid fa-stop me-1"></i> Stop Camera
+                  </button>
+                </div>
+              </div>
+
+              <div id="pfpSnapshotBox" class="mt-3 text-center d-none">
+                <span class="badge badge-fashion badge-pink mb-2">Photo Captured</span>
+                <div>
+                  <img id="pfpSnapshotImg" src="" alt="Snapshot" class="rounded-circle border shadow" style="width: 90px; height: 90px; object-fit: cover;">
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="pfpRetakeBtn">
+                  <i class="fa-solid fa-rotate-left me-1"></i> Retake
+                </button>
+              </div>
+
+              <input type="hidden" name="camera_photo_base64" id="pfpPhotoBase64">
+            </div>
+          </div>
+
+          <div class="modal-footer border-0 pt-4 px-0">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary-gradient">Save Picture</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const pfpCamTab = document.getElementById('pfp-cam-tab');
+  const pfpUploadTab = document.getElementById('pfp-upload-tab');
+  const pfpStartCamBtn = document.getElementById('pfpStartCamBtn');
+  const pfpStopCamBtn = document.getElementById('pfpStopCamBtn');
+  const pfpCaptureBtn = document.getElementById('pfpCaptureBtn');
+  const pfpRetakeBtn = document.getElementById('pfpRetakeBtn');
+  const pfpSnapshotBox = document.getElementById('pfpSnapshotBox');
+
+  pfpCamTab.addEventListener('shown.bs.tab', startPfpCam);
+  pfpUploadTab.addEventListener('shown.bs.tab', () => {
+    stopCamera('pfpCamVideo');
+    updatePfpCamUI(false);
+  });
+
+  pfpStartCamBtn.addEventListener('click', startPfpCam);
+  pfpStopCamBtn.addEventListener('click', () => {
+    stopCamera('pfpCamVideo');
+    updatePfpCamUI(false);
+  });
+
+  pfpCaptureBtn.addEventListener('click', () => {
+    const ok = captureSnapshot('pfpCamVideo', 'pfpCamCanvas', 'pfpPhotoBase64', 'pfpSnapshotImg');
+    if (ok) {
+      pfpSnapshotBox.classList.remove('d-none');
+      stopCamera('pfpCamVideo');
+      updatePfpCamUI(false);
+    }
+  });
+
+  pfpRetakeBtn.addEventListener('click', () => {
+    pfpSnapshotBox.classList.add('d-none');
+    document.getElementById('pfpPhotoBase64').value = '';
+    startPfpCam();
+  });
+
+  function startPfpCam() {
+    startCamera('pfpCamVideo', 'pfpCamErrorBox').then(() => {
+      updatePfpCamUI(true);
+    });
+  }
+
+  function updatePfpCamUI(isRunning) {
+    if (isRunning) {
+      pfpStartCamBtn.classList.add('d-none');
+      pfpCaptureBtn.classList.remove('d-none');
+      pfpStopCamBtn.classList.remove('d-none');
+    } else {
+      pfpStartCamBtn.classList.remove('d-none');
+      pfpCaptureBtn.classList.add('d-none');
+      pfpStopCamBtn.classList.add('d-none');
+    }
+  }
+
+  document.getElementById('profilePhotoForm').addEventListener('submit', function(e) {
+    const fileHasData = document.getElementById('pfpFileInput').files.length > 0;
+    const camHasData = document.getElementById('pfpPhotoBase64').value.length > 100;
+    if (!fileHasData && !camHasData) {
+      e.preventDefault();
+      alert('Please select an image or take a photo.');
+    }
+  });
+});
+</script>
+{% endblock %}

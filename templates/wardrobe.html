@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}My Wardrobe - StyleGuide AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Header / Action Bar -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">
+        My <span class="text-gradient">Wardrobe</span>
+      </h2>
+      <p class="text-secondary small mb-0">
+        Your digital closet of clothes, jewellery, footwear, and accessories.
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('wardrobe_add') }}" class="btn btn-primary-gradient">
+        <i class="fa-solid fa-plus me-1"></i> Add New Item
+      </a>
+      <a href="{{ url_for('style') }}" class="btn btn-outline-gradient">
+        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Style An Outfit
+      </a>
+    </div>
+  </div>
+
+  <!-- Filters & Search Toolbar -->
+  <div class="fashion-card mb-4">
+    <div class="fashion-card-body p-3">
+      <div class="row g-3 align-items-center justify-content-between">
+        <!-- Category Filter Pills -->
+        <div class="col-lg-8">
+          <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm btn-primary-gradient wardrobe-filter-btn active" data-filter="all">
+              All Items ({{ items|length }})
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-gradient wardrobe-filter-btn" data-filter="Clothes">
+              <i class="fa-solid fa-shirt me-1"></i> Clothes ({{ clothes_count }})
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-gradient wardrobe-filter-btn" data-filter="Jewellery">
+              <i class="fa-solid fa-gem me-1"></i> Jewellery ({{ jewellery_count }})
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-gradient wardrobe-filter-btn" data-filter="Footwear">
+              <i class="fa-solid fa-shoe-prints me-1"></i> Footwear ({{ footwear_count }})
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-gradient wardrobe-filter-btn" data-filter="Accessories">
+              <i class="fa-solid fa-glasses me-1"></i> Accessories ({{ accessories_count }})
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="col-lg-4">
+          <div class="input-group">
+            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input type="text" class="form-control border-start-0" id="wardrobeSearchInput" placeholder="Search by name, color, style...">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Grid -->
+  <div class="row g-4" id="wardrobeItemsGrid">
+    {% for item in items %}
+    <div class="col-sm-6 col-md-4 col-xl-3 wardrobe-item-col" data-category="{{ item.main_category }}" data-subcategory="{{ item.sub_category }}">
+      <div class="wardrobe-card h-100">
+        <!-- Heart / Favorite Button -->
+        <button class="fav-btn-badge ajax-fav-btn {% if item.is_favorite %}active{% endif %}" data-type="item" data-id="{{ item.id }}" title="Toggle Favorite">
+          <i class="{% if item.is_favorite %}fa-solid fa-heart text-danger{% else %}fa-regular fa-heart{% endif %}"></i>
+        </button>
+
+        <!-- Garment Image Box -->
+        <div class="wardrobe-img-wrapper">
+          <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.name }}" loading="lazy">
+        </div>
+
+        <!-- Details Content -->
+        <div class="p-3 d-flex flex-column justify-content-between flex-grow-1">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="badge badge-fashion {% if item.main_category == 'Clothes' %}badge-pink{% elif item.main_category == 'Jewellery' %}badge-purple{% else %}badge-pink{% endif %}">
+                {{ item.sub_category }}
+              </span>
+              <span class="small text-muted d-flex align-items-center gap-1">
+                <span class="color-dot-indicator" style="background-color: {{ item.hex_code }};" title="{{ item.color }}"></span>
+                <span class="small">{{ item.color }}</span>
+              </span>
+            </div>
+            
+            <h5 class="fw-bold mb-1 text-truncate" title="{{ item.name }}">{{ item.name }}</h5>
+
+            <div class="d-flex flex-wrap gap-1 mb-2">
+              <span class="badge bg-light text-secondary border small">{{ item.style }}</span>
+              <span class="badge bg-light text-secondary border small">{{ item.occasion }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-2">
+            <a href="{{ url_for('wardrobe_edit', item_id=item.id) }}" class="btn btn-sm btn-subtle-pink py-1 px-2">
+              <i class="fa-regular fa-pen-to-square me-1"></i> Edit
+            </a>
+            
+            <form action="{{ url_for('wardrobe_delete', item_id=item.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this item?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Delete item">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <!-- Empty Wardrobe State -->
+    <div class="col-12 text-center py-5">
+      <div class="stat-icon pink mx-auto mb-3" style="width: 72px; height: 72px; font-size: 2rem;">
+        <i class="fa-solid fa-shirt"></i>
+      </div>
+      <h3 class="fw-bold mb-2">Your Wardrobe is Looking Clean & Empty!</h3>
+      <p class="text-secondary max-w-md mx-auto mb-4" style="max-width: 450px;">
+        Start by adding your favorite clothes, jewellery, footwear, and accessories using your camera or gallery photos.
+      </p>
+      <div class="d-flex justify-content-center gap-3">
+        <a href="{{ url_for('wardrobe_add') }}" class="btn btn-primary-gradient">
+          <i class="fa-solid fa-plus me-1"></i> Add Your First Piece
+        </a>
+        <form action="{{ url_for('load_demo_data') }}" method="POST" class="d-inline">
+          <button type="submit" class="btn btn-outline-gradient">
+            <i class="fa-solid fa-cloud-arrow-down me-1"></i> Load 12 Demo Items
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Search No Results Notice -->
+  <div id="noItemsNotice" class="text-center py-5" style="display: none;">
+    <div class="stat-icon purple mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </div>
+    <h5 class="fw-bold">No items match your filter</h5>
+    <p class="text-muted small">Try searching with a different keyword or reset your filter.</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/wardrobe.js') }}"></script>
+{% endblock %}

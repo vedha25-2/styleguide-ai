@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Register - StyleGuide AI{% endblock %}
+
+{% block public_content %}
+<div class="auth-wrapper">
+  <div class="auth-card" style="max-width: 520px;">
+    <div class="text-center mb-4">
+      <div class="brand-icon-box mx-auto mb-3" style="width: 58px; height: 58px; font-size: 1.75rem;">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+      </div>
+      <h2 class="fw-bold mb-1">
+        Style<span class="text-gradient">Guide</span> <span class="text-pink">AI</span>
+      </h2>
+      <p class="text-muted small text-uppercase fw-semibold letter-spacing-1">
+        Personalised Style Guidance
+      </p>
+    </div>
+
+    <form action="{{ url_for('register') }}" method="POST">
+      <div class="mb-3">
+        <label for="full_name" class="form-label fw-semibold text-secondary small">Full Name</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-regular fa-user"></i></span>
+          <input type="text" class="form-control border-start-0" id="full_name" name="full_name" placeholder="e.g. Vedha Sharma" required value="{{ request.form.full_name if request.form else '' }}">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label fw-semibold text-secondary small">Email Address</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-regular fa-envelope"></i></span>
+          <input type="email" class="form-control border-start-0" id="email" name="email" placeholder="name@example.com" required value="{{ request.form.email if request.form else '' }}">
+        </div>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label for="gender" class="form-label fw-semibold text-secondary small">Gender</label>
+          <select class="form-select" id="gender" name="gender">
+            <option value="Female" selected>Female</option>
+            <option value="Male">Male</option>
+            <option value="Non-Binary">Non-Binary</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="age" class="form-label fw-semibold text-secondary small">Age (Optional)</label>
+          <input type="number" class="form-control" id="age" name="age" min="12" max="110" placeholder="e.g. 24" value="{{ request.form.age if request.form else '' }}">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label fw-semibold text-secondary small">Password</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-lock"></i></span>
+          <input type="password" class="form-control border-start-0 border-end-0" id="password" name="password" placeholder="At least 6 characters" minlength="6" required>
+          <button class="btn btn-outline-secondary border-start-0 toggle-password-btn" type="button" data-target="#password">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="confirm_password" class="form-label fw-semibold text-secondary small">Confirm Password</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-shield-halved"></i></span>
+          <input type="password" class="form-control border-start-0 border-end-0" id="confirm_password" name="confirm_password" placeholder="Re-enter password" required>
+          <button class="btn btn-outline-secondary border-start-0 toggle-password-btn" type="button" data-target="#confirm_password">
+            <i class="fa-regular fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary-gradient w-100 py-2 fs-6">
+        <i class="fa-solid fa-user-plus me-2"></i> Create Account
+      </button>
+
+      <div class="text-center mt-4 pt-2 border-top">
+        <p class="text-muted small mb-0">
+          Already have an account? 
+          <a href="{{ url_for('login') }}" class="fw-bold text-gradient">Back to Login</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

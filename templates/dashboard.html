@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - StyleGuide AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Welcome Hero Banner -->
+  <div class="fashion-card mb-4" style="background: linear-gradient(135deg, rgba(236,72,153,0.08) 0%, rgba(139,92,246,0.12) 100%); border: 1px solid var(--pink-border);">
+    <div class="fashion-card-body p-4 p-lg-5">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <span class="badge badge-fashion badge-purple mb-2"><i class="fa-solid fa-sparkles me-1"></i> Smart Fashion Intelligence</span>
+          <h1 class="display-6 fw-bold mb-2">
+            Good day, <span class="text-gradient">{{ current_user.full_name.split()[0] }}</span> 👋
+          </h1>
+          <p class="lead text-secondary mb-4 fs-6">
+            Let AI help you find your perfect style today. Explore personalized outfit combinations, discover harmonious color pairings, and curate your wardrobe effortlessly.
+          </p>
+          <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('style') }}" class="btn btn-primary-gradient">
+              <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Get Style Recommendation
+            </a>
+            <a href="{{ url_for('outfit_generator') }}" class="btn btn-outline-gradient">
+              <i class="fa-solid fa-robot me-1"></i> AI Outfit Generator
+            </a>
+            <a href="{{ url_for('wardrobe_add') }}" class="btn btn-subtle-pink">
+              <i class="fa-solid fa-plus me-1"></i> Add Fashion Item
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-4 text-center d-none d-lg-block">
+          <img src="{{ url_for('static', filename='images/samples/floral_dress.svg') }}" alt="Fashion Preview" style="max-height: 180px; filter: drop-shadow(0 15px 25px rgba(236,72,153,0.3));" class="img-fluid animate-pulse">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- If wardrobe is empty, show 1-click sample data option -->
+  {% if stats.total_items == 0 %}
+  <div class="alert alert-fashion d-flex align-items-center justify-content-between p-3 mb-4" role="alert">
+    <div class="d-flex align-items-center">
+      <div class="stat-icon pink me-3" style="width: 44px; height: 44px; font-size: 1.2rem;">
+        <i class="fa-solid fa-lightbulb"></i>
+      </div>
+      <div>
+        <h6 class="mb-0 fw-bold">Your wardrobe is empty! Would you like to load demo items?</h6>
+        <small class="text-muted">Instantly explore recommendations with a curated 12-piece fashion collection.</small>
+      </div>
+    </div>
+    <form action="{{ url_for('load_demo_data') }}" method="POST" class="m-0">
+      <button type="submit" class="btn btn-primary-gradient btn-sm">
+        <i class="fa-solid fa-cloud-arrow-down me-1"></i> Load Demo Wardrobe
+      </button>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- Quick Statistics -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Total Clothes</div>
+          <h2 class="fw-bold mb-0 mt-1">{{ stats.clothes_count }}</h2>
+          <small class="text-pink fw-semibold">Tops, bottoms, dresses</small>
+        </div>
+        <div class="stat-icon pink">
+          <i class="fa-solid fa-shirt"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Jewellery Items</div>
+          <h2 class="fw-bold mb-0 mt-1">{{ stats.jewellery_count }}</h2>
+          <small class="text-purple fw-semibold">Earrings, chains, rings</small>
+        </div>
+        <div class="stat-icon purple">
+          <i class="fa-solid fa-gem"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Footwear</div>
+          <h2 class="fw-bold mb-0 mt-1">{{ stats.footwear_count }}</h2>
+          <small class="text-indigo fw-semibold">Heels, sneakers, flats</small>
+        </div>
+        <div class="stat-icon indigo">
+          <i class="fa-solid fa-shoe-prints"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div>
+          <div class="text-muted small fw-semibold text-uppercase">Saved Outfits</div>
+          <h2 class="fw-bold mb-0 mt-1">{{ stats.outfits_count }}</h2>
+          <small class="text-warning fw-semibold">Complete curated looks</small>
+        </div>
+        <div class="stat-icon amber">
+          <i class="fa-solid fa-heart"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Feature Cards Grid -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-4">
+      <div class="fashion-card h-100">
+        <div class="fashion-card-body d-flex flex-column justify-content-between h-100">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-fashion badge-pink">Wardrobe Hub</span>
+              <div class="stat-icon pink" style="width: 40px; height: 40px; font-size: 1.1rem;"><i class="fa-solid fa-door-open"></i></div>
+            </div>
+            <h4 class="fw-bold mb-2">My Wardrobe</h4>
+            <p class="text-secondary small">
+              Digitize clothes, footwear, jewellery, and accessories with camera or gallery photos. Automatic color categorization.
+            </p>
+          </div>
+          <div class="pt-3 border-top mt-3">
+            <a href="{{ url_for('wardrobe') }}" class="btn btn-outline-gradient w-100">
+              Open Wardrobe <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+      <div class="fashion-card h-100">
+        <div class="fashion-card-body d-flex flex-column justify-content-between h-100">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-fashion badge-purple">AI Recommendation</span>
+              <div class="stat-icon purple" style="width: 40px; height: 40px; font-size: 1.1rem;"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            </div>
+            <h4 class="fw-bold mb-2">My Style</h4>
+            <p class="text-secondary small">
+              Pick garments from your collection, pick an occasion (Office, Wedding, Date, Party), and get AI-matched jewellery & footwear styling.
+            </p>
+          </div>
+          <div class="pt-3 border-top mt-3">
+            <a href="{{ url_for('style') }}" class="btn btn-outline-gradient w-100">
+              Style My Outfit <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+      <div class="fashion-card h-100">
+        <div class="fashion-card-body d-flex flex-column justify-content-between h-100">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-fashion badge-pink">Computer Vision</span>
+              <div class="stat-icon pink" style="width: 40px; height: 40px; font-size: 1.1rem;"><i class="fa-solid fa-user-astronaut"></i></div>
+            </div>
+            <h4 class="fw-bold mb-2">Personal Features</h4>
+            <p class="text-secondary small">
+              Computer vision estimates skin tone, body shape, height, and weight to unlock customized silhouette and color palette recommendations.
+            </p>
+          </div>
+          <div class="pt-3 border-top mt-3">
+            <a href="{{ url_for('personal_features') }}" class="btn btn-outline-gradient w-100">
+              View Profile Analysis <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+      <div class="fashion-card h-100">
+        <div class="fashion-card-body d-flex flex-column justify-content-between h-100">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-fashion badge-purple">Generative Engine</span>
+              <div class="stat-icon purple" style="width: 40px; height: 40px; font-size: 1.1rem;"><i class="fa-solid fa-robot"></i></div>
+            </div>
+            <h4 class="fw-bold mb-2">AI Outfit Generator</h4>
+            <p class="text-secondary small">
+              Let AI assemble head-to-toe complete outfit looks matching your preferred weather, style, and color preferences from your wardrobe.
+            </p>
+          </div>
+          <div class="pt-3 border-top mt-3">
+            <a href="{{ url_for('outfit_generator') }}" class="btn btn-outline-gradient w-100">
+              Generate Look <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+      <div class="fashion-card h-100">
+        <div class="fashion-card-body d-flex flex-column justify-content-between h-100">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-fashion badge-pink">Lookbook</span>
+              <div class="stat-icon pink" style="width: 40px; height: 40px; font-size: 1.1rem;"><i class="fa-solid fa-heart"></i></div>
+            </div>
+            <h4 class="fw-bold mb-2">Favorites</h4>
+            <p class="text-secondary small">
+              Quickly browse your most loved garments, statement pieces, and favorite generated complete looks.
+            </p>
+          </div>
+          <div class="pt-3 border-top mt-3">
+            <a href="{{ url_for('favorites') }}" class="btn btn-outline-gradient w-100">
+              Browse Favorites <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+      <div class="fashion-card h-100">
+        <div class="fashion-card-body d-flex flex-column justify-content-between h-100">
+          <div>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="badge badge-fashion badge-purple">Timeline</span>
+              <div class="stat-icon purple" style="width: 40px; height: 40px; font-size: 1.1rem;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            </div>
+            <h4 class="fw-bold mb-2">Outfit History</h4>
+            <p class="text-secondary small">
+              Review your previous AI style consultations, scores, and occasion recommendations anytime.
+            </p>
+          </div>
+          <div class="pt-3 border-top mt-3">
+            <a href="{{ url_for('outfit_history') }}" class="btn btn-outline-gradient w-100">
+              View History <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Outfits / Recommendations Section -->
+  {% if recent_recommendations %}
+  <div class="fashion-card mb-4">
+    <div class="fashion-card-body p-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h4 class="fw-bold mb-0">Recent Style Recommendations</h4>
+          <small class="text-muted">Your latest personalized styling advice</small>
+        </div>
+        <a href="{{ url_for('outfit_history') }}" class="btn btn-sm btn-subtle-pink">View All</a>
+      </div>
+
+      <div class="row g-3">
+        {% for rec in recent_recommendations %}
+        <div class="col-md-6 col-xl-4">
+          <div class="p-3 border rounded-3 bg-light-subtle h-100 d-flex flex-column justify-content-between">
+            <div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="badge badge-fashion badge-pink">{{ rec.occasion }}</span>
+                <span class="badge badge-fashion badge-purple">Score: {{ rec.style_score }}%</span>
+              </div>
+              <h6 class="fw-bold mb-1 text-truncate">{{ rec.selected_items_summary }}</h6>
+              <p class="small text-secondary mb-2 line-clamp-2">{{ rec.why_it_works }}</p>
+            </div>
+            <div class="small border-top pt-2 mt-2 text-muted d-flex justify-content-between align-items-center">
+              <span><i class="fa-regular fa-calendar me-1"></i> {{ rec.created_at.strftime('%b %d, %Y') }}</span>
+              <span class="text-gradient fw-semibold">{{ rec.color_compatibility }}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

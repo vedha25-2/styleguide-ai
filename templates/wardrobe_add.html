@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Fashion Piece - StyleGuide AI{% endblock %}
+
+{% block content %}
+<div class="container py-2" style="max-width: 860px;">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('wardrobe') }}">My Wardrobe</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Add New Item</li>
+    </ol>
+  </nav>
+
+  <div class="fashion-card">
+    <div class="fashion-card-body p-4 p-md-5">
+      <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+          <h3 class="fw-bold mb-1">Add <span class="text-gradient">Fashion Piece</span></h3>
+          <p class="text-muted small mb-0">Upload from gallery or snap a photo with your camera.</p>
+        </div>
+        <div class="brand-icon-box" style="width: 44px; height: 44px; font-size: 1.25rem;">
+          <i class="fa-solid fa-shirt"></i>
+        </div>
+      </div>
+
+      <form action="{{ url_for('wardrobe_add') }}" method="POST" enctype="multipart/form-data" id="wardrobeAddForm">
+        <!-- Photo Selection Mode Tabs -->
+        <div class="mb-4">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Garment / Item Photo</label>
+          <ul class="nav nav-pills mb-3" id="photoMethodTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active rounded-pill px-4" id="upload-tab" data-bs-toggle="pill" data-bs-target="#uploadTabPane" type="button" role="tab">
+                <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload from Gallery
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link rounded-pill px-4" id="camera-tab" data-bs-toggle="pill" data-bs-target="#cameraTabPane" type="button" role="tab">
+                <i class="fa-solid fa-camera me-1"></i> Open Camera
+              </button>
+            </li>
+          </ul>
+
+          <div class="tab-content" id="photoMethodContent">
+            <!-- Gallery Upload Tab Pane -->
+            <div class="tab-pane fade show active" id="uploadTabPane" role="tabpanel">
+              <div class="border border-2 border-dashed rounded-3 p-4 text-center bg-light-subtle" id="dropZoneArea">
+                <div class="mb-3">
+                  <i class="fa-regular fa-image text-pink fs-1"></i>
+                </div>
+                <h6 class="fw-bold mb-1">Select an image from your device</h6>
+                <p class="text-muted small mb-3">Supports JPG, PNG, WEBP up to 16MB</p>
+                <input type="file" class="form-control d-none" id="imageFileInput" name="image_file" accept="image/*">
+                <button type="button" class="btn btn-outline-gradient btn-sm" onclick="document.getElementById('imageFileInput').click();">
+                  Browse Gallery
+                </button>
+              </div>
+              <div id="fileUploadPreviewBox" class="mt-3 text-center d-none">
+                <img id="filePreviewImg" src="" alt="Preview" class="rounded-3 shadow-sm" style="max-height: 200px; max-width: 100%; object-fit: contain;">
+                <p class="text-muted small mt-1" id="filePreviewName"></p>
+              </div>
+            </div>
+
+            <!-- Live Camera Capture Tab Pane -->
+            <div class="tab-pane fade" id="cameraTabPane" role="tabpanel">
+              <div id="cameraErrorBox" class="d-none"></div>
+
+              <div class="camera-container" id="cameraBox">
+                <video id="cameraVideo" class="camera-preview-video" autoplay playsinline></video>
+                <canvas id="cameraCanvas" class="d-none"></canvas>
+                
+                <div class="camera-controls-bar">
+                  <button type="button" class="btn btn-sm btn-light rounded-pill px-3 shadow" id="startCamBtn">
+                    <i class="fa-solid fa-power-off me-1"></i> Start Camera
+                  </button>
+                  <button type="button" class="shutter-btn d-none" id="captureBtn" title="Take Snapshot">
+                    <i class="fa-solid fa-camera"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 shadow d-none" id="stopCamBtn">
+                    <i class="fa-solid fa-stop me-1"></i> Stop Camera
+                  </button>
+                </div>
+              </div>
+
+              <!-- Captured Snapshot Preview -->
+              <div id="snapshotPreviewBox" class="mt-3 text-center d-none">
+                <div class="badge badge-fashion badge-pink mb-2">Photo Captured</div>
+                <div>
+                  <img id="snapshotPreviewImg" src="" alt="Snapshot" class="rounded-3 border shadow-sm" style="max-height: 220px; object-fit: contain;">
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="retakeBtn">
+                  <i class="fa-solid fa-rotate-left me-1"></i> Retake Photo
+                </button>
+              </div>
+
+              <!-- Hidden Base64 Input for Camera Output -->
+              <input type="hidden" name="camera_photo_base64" id="cameraPhotoBase64">
+            </div>
+          </div>
+        </div>
+
+        <!-- Garment Details Fields -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="name" class="form-label fw-bold small text-secondary">Item Name *</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Crisp White Linen Shirt" required>
+          </div>
+
+          <div class="col-md-6">
+            <label for="mainCategorySelect" class="form-label fw-bold small text-secondary">Main Category *</label>
+            <select class="form-select" id="mainCategorySelect" name="main_category" required>
+              <option value="Clothes" selected>Clothes</option>
+              <option value="Jewellery">Jewellery</option>
+              <option value="Footwear">Footwear</option>
+              <option value="Accessories">Accessories</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label for="subCategorySelect" class="form-label fw-bold small text-secondary">Sub Category *</label>
+            <select class="form-select" id="subCategorySelect" name="sub_category" required>
+              <!-- Populated via JavaScript dynamically -->
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label for="colorInput" class="form-label fw-bold small text-secondary">
+              Garment Color <small class="text-muted fw-normal">(Leave blank for AI auto-extraction)</small>
+            </label>
+            <input type="text" class="form-control" id="colorInput" name="color" placeholder="e.g. Navy Blue, Blush Pink (or Auto-detect)">
+          </div>
+
+          <div class="col-md-6">
+            <label for="styleSelect" class="form-label fw-bold small text-secondary">Fashion Style</label>
+            <select class="form-select" id="styleSelect" name="style">
+              <option value="Casual" selected>Casual</option>
+              <option value="Smart Casual">Smart Casual</option>
+              <option value="Formal">Formal</option>
+              <option value="Chic">Chic</option>
+              <option value="Boho">Boho</option>
+              <option value="Sporty">Sporty</option>
+              <option value="Traditional">Traditional</option>
+              <option value="Streetwear">Streetwear</option>
+              <option value="Minimalist">Minimalist</option>
+              <option value="Glam">Glam</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label for="occasionSelect" class="form-label fw-bold small text-secondary">Primary Occasion</label>
+            <select class="form-select" id="occasionSelect" name="occasion">
+              <option value="Casual" selected>Casual</option>
+              <option value="College">College</option>
+              <option value="Office">Office</option>
+              <option value="Party">Party</option>
+              <option value="Wedding">Wedding</option>
+              <option value="Date">Date</option>
+              <option value="Festival">Festival</option>
+              <option value="Interview">Interview</option>
+              <option value="Travel">Travel</option>
+              <option value="Traditional">Traditional</option>
+              <option value="Formal">Formal</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label for="notesInput" class="form-label fw-bold small text-secondary">Personal Notes (Optional)</label>
+            <textarea class="form-control" id="notesInput" name="notes" rows="2" placeholder="e.g. Pairs best with high-waist denim or gold studs..."></textarea>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex align-items-center justify-content-end gap-3 mt-4 pt-3 border-top">
+          <a href="{{ url_for('wardrobe') }}" class="btn btn-light px-4">Cancel</a>
+          <button type="submit" class="btn btn-primary-gradient px-4">
+            <i class="fa-solid fa-cloud-arrow-up me-1"></i> Save to Wardrobe
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/wardrobe.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // File Preview Handler
+  const fileInput = document.getElementById('imageFileInput');
+  const previewBox = document.getElementById('fileUploadPreviewBox');
+  const previewImg = document.getElementById('filePreviewImg');
+  const previewName = document.getElementById('filePreviewName');
+
+  fileInput.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      const file = this.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        previewName.textContent = file.name;
+        previewBox.classList.remove('d-none');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Camera Tab Controls
+  const cameraTab = document.getElementById('camera-tab');
+  const uploadTab = document.getElementById('upload-tab');
+  const startCamBtn = document.getElementById('startCamBtn');
+  const stopCamBtn = document.getElementById('stopCamBtn');
+  const captureBtn = document.getElementById('captureBtn');
+  const retakeBtn = document.getElementById('retakeBtn');
+  const snapshotPreviewBox = document.getElementById('snapshotPreviewBox');
+
+  cameraTab.addEventListener('shown.bs.tab', () => {
+    startCameraHandler();
+  });
+
+  uploadTab.addEventListener('shown.bs.tab', () => {
+    stopCamera('cameraVideo');
+    updateCamUI(false);
+  });
+
+  startCamBtn.addEventListener('click', () => {
+    startCameraHandler();
+  });
+
+  stopCamBtn.addEventListener('click', () => {
+    stopCamera('cameraVideo');
+    updateCamUI(false);
+  });
+
+  captureBtn.addEventListener('click', () => {
+    const success = captureSnapshot('cameraVideo', 'cameraCanvas', 'cameraPhotoBase64', 'snapshotPreviewImg');
+    if (success) {
+      snapshotPreviewBox.classList.remove('d-none');
+      stopCamera('cameraVideo');
+      updateCamUI(false);
+    }
+  });
+
+  retakeBtn.addEventListener('click', () => {
+    snapshotPreviewBox.classList.add('d-none');
+    document.getElementById('cameraPhotoBase64').value = '';
+    startCameraHandler();
+  });
+
+  function startCameraHandler() {
+    startCamera('cameraVideo', 'cameraErrorBox').then(() => {
+      updateCamUI(true);
+    });
+  }
+
+  function updateCamUI(isRunning) {
+    if (isRunning) {
+      startCamBtn.classList.add('d-none');
+      captureBtn.classList.remove('d-none');
+      stopCamBtn.classList.remove('d-none');
+    } else {
+      startCamBtn.classList.remove('d-none');
+      captureBtn.classList.add('d-none');
+      stopCamBtn.classList.add('d-none');
+    }
+  }
+
+  // Form Validation before submit
+  document.getElementById('wardrobeAddForm').addEventListener('submit', function(e) {
+    const fileHasData = fileInput.files && fileInput.files.length > 0;
+    const camHasData = document.getElementById('cameraPhotoBase64').value.length > 100;
+
+    if (!fileHasData && !camHasData) {
+      e.preventDefault();
+      alert('Please upload an image from your gallery or capture one using your camera.');
+    }
+  });
+});
+</script>
+{% endblock %}

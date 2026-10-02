@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}StyleGuide AI{% endblock %} - Personalised Style Guidance</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom StyleGuide AI Theme CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  {% if current_user.is_authenticated %}
+  <div class="app-container">
+    <!-- Left Hamburger Sidebar -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <a href="{{ url_for('dashboard') }}" class="brand-wrapper text-decoration-none">
+          <div class="brand-icon-box">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div class="brand-text-box">
+            <h2 class="text-gradient">StyleGuide AI</h2>
+            <span>Personalised Style Guidance</span>
+          </div>
+        </a>
+      </div>
+
+      <ul class="sidebar-menu">
+        <li class="menu-section-label">Main Navigation</li>
+        <li class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
+          <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-house"></i> <span>Dashboard</span></a>
+        </li>
+        <li class="{% if 'wardrobe' in request.endpoint %}active{% endif %}">
+          <a href="{{ url_for('wardrobe') }}"><i class="fa-solid fa-shirt"></i> <span>My Wardrobe</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'style' %}active{% endif %}">
+          <a href="{{ url_for('style') }}"><i class="fa-solid fa-gem"></i> <span>My Style</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'personal_features' %}active{% endif %}">
+          <a href="{{ url_for('personal_features') }}"><i class="fa-solid fa-user-astronaut"></i> <span>Personal Features</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'outfit_generator' %}active{% endif %}">
+          <a href="{{ url_for('outfit_generator') }}"><i class="fa-solid fa-robot"></i> <span>AI Outfit Generator</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'favorites' %}active{% endif %}">
+          <a href="{{ url_for('favorites') }}"><i class="fa-solid fa-heart"></i> <span>Favorites</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'outfit_history' %}active{% endif %}">
+          <a href="{{ url_for('outfit_history') }}"><i class="fa-solid fa-clock-rotate-left"></i> <span>Outfit History</span></a>
+        </li>
+
+        <li class="menu-section-label">User & System</li>
+        <li class="{% if request.endpoint == 'profile' %}active{% endif %}">
+          <a href="{{ url_for('profile') }}"><i class="fa-solid fa-circle-user"></i> <span>Profile</span></a>
+        </li>
+        <li class="{% if request.endpoint == 'settings' %}active{% endif %}">
+          <a href="{{ url_for('settings') }}"><i class="fa-solid fa-sliders"></i> <span>Settings</span></a>
+        </li>
+        <li>
+          <a href="{{ url_for('logout') }}" class="text-danger"><i class="fa-solid fa-arrow-right-from-bracket text-danger"></i> <span>Logout</span></a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="d-flex align-items-center justify-content-between">
+          <small class="text-muted"><i class="fa-solid fa-sparkles text-gradient me-1"></i> StyleGuide AI v2.4</small>
+          <a href="{{ url_for('settings') }}" class="text-muted"><i class="fa-solid fa-gear"></i></a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile Drawer Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- App Main Area -->
+    <div class="app-main">
+      <!-- Topbar Header -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="hamburger-btn" id="hamburgerBtn" title="Toggle Navigation Menu">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="d-none d-md-flex align-items-center gap-2">
+            <span class="badge badge-fashion badge-pink">AI Fashion Assistant</span>
+            <small class="text-muted">Smart Wardrobe & Personalized Curation</small>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+
+          <a href="{{ url_for('profile') }}" class="user-profile-badge text-decoration-none">
+            <img src="{{ url_for('static', filename=current_user.profile_image if current_user.profile_image.startswith('uploads/') or current_user.profile_image.startswith('images/') else 'images/' + current_user.profile_image) }}" alt="{{ current_user.full_name }}" class="user-avatar-img">
+            <div class="user-profile-info d-none d-sm-block">
+              <div class="name">{{ current_user.full_name }}</div>
+              <div class="role">{{ current_user.email }}</div>
+            </div>
+          </a>
+        </div>
+      </header>
+
+      <!-- Main Body Container -->
+      <main class="page-body">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="mb-4">
+              {% for category, message in messages %}
+                <div class="alert alert-fashion alert-dismissible fade show d-flex align-items-center" role="alert">
+                  <i class="fa-solid {% if category == 'success' %}fa-circle-check text-success{% elif category == 'danger' or category == 'error' %}fa-circle-exclamation text-danger{% else %}fa-circle-info text-primary{% endif %} me-2 fs-5"></i>
+                  <div class="flex-grow-1">{{ message }}</div>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="text-center py-3 text-muted border-top bg-surface small">
+        &copy; 2026 <strong>StyleGuide AI</strong> – Personalised Style Guidance. Designed for modern fashion tech.
+      </footer>
+    </div>
+  </div>
+  {% else %}
+    <!-- Public Layout (Login, Register) -->
+    <main>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 2000; width: 90%; max-width: 500px;">
+            {% for category, message in messages %}
+              <div class="alert alert-fashion alert-dismissible fade show shadow-lg" role="alert">
+                <i class="fa-solid fa-circle-info me-2"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block public_content %}{% endblock %}
+    </main>
+  {% endif %}
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index: 2100;"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

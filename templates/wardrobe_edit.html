@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ item.name }} - StyleGuide AI{% endblock %}
+
+{% block content %}
+<div class="container py-2" style="max-width: 860px;">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('wardrobe') }}">My Wardrobe</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Edit {{ item.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="fashion-card">
+    <div class="fashion-card-body p-4 p-md-5">
+      <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
+        <div>
+          <h3 class="fw-bold mb-1">Edit <span class="text-gradient">Fashion Piece</span></h3>
+          <p class="text-muted small mb-0">Update item details, colors, or replace the photo.</p>
+        </div>
+        <div class="stat-icon pink" style="width: 44px; height: 44px; font-size: 1.25rem;">
+          <i class="fa-regular fa-pen-to-square"></i>
+        </div>
+      </div>
+
+      <form action="{{ url_for('wardrobe_edit', item_id=item.id) }}" method="POST" enctype="multipart/form-data">
+        <div class="row g-4 mb-4">
+          <!-- Current Image Preview -->
+          <div class="col-md-4 text-center">
+            <label class="form-label fw-bold small text-secondary">Current Image</label>
+            <div class="p-3 border rounded-3 bg-light-subtle mb-3">
+              <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.name }}" style="max-height: 180px; max-width: 100%; object-fit: contain;">
+            </div>
+            <label for="replaceImageInput" class="btn btn-outline-gradient btn-sm w-100">
+              <i class="fa-solid fa-camera-rotate me-1"></i> Replace Photo
+            </label>
+            <input type="file" id="replaceImageInput" name="image_file" class="d-none" accept="image/*" onchange="document.getElementById('replaceNotice').classList.remove('d-none');">
+            <small id="replaceNotice" class="text-success d-none mt-1 d-block"><i class="fa-solid fa-check me-1"></i> New image selected</small>
+          </div>
+
+          <!-- Form Fields -->
+          <div class="col-md-8">
+            <div class="row g-3">
+              <div class="col-12">
+                <label for="name" class="form-label fw-bold small text-secondary">Item Name *</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ item.name }}" required>
+              </div>
+
+              <div class="col-md-6">
+                <label for="mainCategorySelect" class="form-label fw-bold small text-secondary">Main Category</label>
+                <select class="form-select" id="mainCategorySelect" name="main_category" required>
+                  <option value="Clothes" {% if item.main_category == 'Clothes' %}selected{% endif %}>Clothes</option>
+                  <option value="Jewellery" {% if item.main_category == 'Jewellery' %}selected{% endif %}>Jewellery</option>
+                  <option value="Footwear" {% if item.main_category == 'Footwear' %}selected{% endif %}>Footwear</option>
+                  <option value="Accessories" {% if item.main_category == 'Accessories' %}selected{% endif %}>Accessories</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="subCategorySelect" class="form-label fw-bold small text-secondary">Sub Category</label>
+                <select class="form-select" id="subCategorySelect" name="sub_category" required>
+                  <option value="{{ item.sub_category }}" selected>{{ item.sub_category }}</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="colorInput" class="form-label fw-bold small text-secondary">Color Name</label>
+                <input type="text" class="form-control" id="colorInput" name="color" value="{{ item.color }}">
+              </div>
+
+              <div class="col-md-6">
+                <label for="hexInput" class="form-label fw-bold small text-secondary">Color Hex Code</label>
+                <div class="input-group">
+                  <input type="color" class="form-control form-control-color" id="hexPicker" value="{{ item.hex_code }}" title="Choose Color" onchange="document.getElementById('hexInput').value = this.value;">
+                  <input type="text" class="form-control" id="hexInput" name="hex_code" value="{{ item.hex_code }}">
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="styleSelect" class="form-label fw-bold small text-secondary">Fashion Style</label>
+                <select class="form-select" id="styleSelect" name="style">
+                  {% for s in ['Casual', 'Smart Casual', 'Formal', 'Chic', 'Boho', 'Sporty', 'Traditional', 'Streetwear', 'Minimalist', 'Glam'] %}
+                    <option value="{{ s }}" {% if item.style == s %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="occasionSelect" class="form-label fw-bold small text-secondary">Occasion</label>
+                <select class="form-select" id="occasionSelect" name="occasion">
+                  {% for occ in ['Casual', 'College', 'Office', 'Party', 'Wedding', 'Date', 'Festival', 'Interview', 'Travel', 'Traditional', 'Formal', 'Other'] %}
+                    <option value="{{ occ }}" {% if item.occasion == occ %}selected{% endif %}>{{ occ }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label for="notesInput" class="form-label fw-bold small text-secondary">Personal Notes</label>
+                <textarea class="form-control" id="notesInput" name="notes" rows="2">{{ item.notes or '' }}</textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+          <button type="button" class="btn btn-outline-danger" onclick="if(confirm('Are you sure you want to delete this piece?')) { document.getElementById('deleteForm').submit(); }">
+            <i class="fa-regular fa-trash-can me-1"></i> Delete Piece
+          </button>
+
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('wardrobe') }}" class="btn btn-light px-4">Cancel</a>
+            <button type="submit" class="btn btn-primary-gradient px-4">
+              <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <form id="deleteForm" action="{{ url_for('wardrobe_delete', item_id=item.id) }}" method="POST" class="d-none"></form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/wardrobe.js') }}"></script>
+{% endblock %}

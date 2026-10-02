@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Favorites - StyleGuide AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">
+        My <span class="text-gradient">Favorites</span>
+      </h2>
+      <p class="text-secondary small mb-0">
+        Your hand-picked collection of beloved wardrobe pieces and saved outfit looks.
+      </p>
+    </div>
+    <div>
+      <a href="{{ url_for('wardrobe') }}" class="btn btn-outline-gradient btn-sm">
+        <i class="fa-solid fa-shirt me-1"></i> Browse Wardrobe
+      </a>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs: Items vs Outfits -->
+  <ul class="nav nav-pills mb-4" id="favTabs" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active rounded-pill px-4" id="fav-items-tab" data-bs-toggle="pill" data-bs-target="#favItemsPane" type="button">
+        <i class="fa-solid fa-shirt me-1"></i> Favorite Pieces ({{ favorite_items|length }})
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link rounded-pill px-4" id="fav-outfits-tab" data-bs-toggle="pill" data-bs-target="#favOutfitsPane" type="button">
+        <i class="fa-solid fa-heart me-1"></i> Saved Outfits ({{ favorite_outfits|length }})
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="favTabContent">
+    <!-- Favorite Wardrobe Pieces Pane -->
+    <div class="tab-pane fade show active" id="favItemsPane">
+      <div class="row g-4">
+        {% for item in favorite_items %}
+        <div class="col-sm-6 col-md-4 col-xl-3">
+          <div class="wardrobe-card h-100">
+            <button class="fav-btn-badge ajax-fav-btn active" data-type="item" data-id="{{ item.id }}" title="Remove from Favorites">
+              <i class="fa-solid fa-heart text-danger"></i>
+            </button>
+
+            <div class="wardrobe-img-wrapper">
+              <img src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.name }}">
+            </div>
+
+            <div class="p-3 d-flex flex-column justify-content-between flex-grow-1">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                  <span class="badge badge-fashion badge-pink">{{ item.sub_category }}</span>
+                  <span class="small text-muted">{{ item.color }}</span>
+                </div>
+                <h6 class="fw-bold mb-1 text-truncate">{{ item.name }}</h6>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-3">
+                <a href="{{ url_for('wardrobe_edit', item_id=item.id) }}" class="btn btn-sm btn-subtle-pink py-1 px-2">
+                  <i class="fa-regular fa-pen-to-square me-1"></i> Edit
+                </a>
+                <form action="{{ url_for('favorites_remove', fav_type='item', item_id=item.id) }}" method="POST" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Remove Favorite">
+                    <i class="fa-solid fa-xmark"></i> Remove
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+          <div class="stat-icon pink mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+            <i class="fa-regular fa-heart"></i>
+          </div>
+          <h5 class="fw-bold mb-1">No Favorite Pieces Saved Yet</h5>
+          <p class="text-secondary small mb-3">Click the heart icon on any wardrobe piece to add it to your quick-access favorites.</p>
+          <a href="{{ url_for('wardrobe') }}" class="btn btn-primary-gradient btn-sm">Explore Wardrobe</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Favorite Complete Outfits Pane -->
+    <div class="tab-pane fade" id="favOutfitsPane">
+      <div class="row g-4">
+        {% for outfit in favorite_outfits %}
+        <div class="col-md-6 col-xl-4">
+          <div class="fashion-card h-100">
+            <div class="fashion-card-body p-4 d-flex flex-column justify-content-between h-100">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <span class="badge badge-fashion badge-purple">{{ outfit.occasion }}</span>
+                  <span class="badge badge-fashion badge-pink">Style Score: {{ outfit.style_score }}%</span>
+                </div>
+                <h5 class="fw-bold mb-2">{{ outfit.name }}</h5>
+                <p class="small text-secondary mb-3">{{ outfit.reasoning }}</p>
+
+                <!-- Included Pieces Previews -->
+                <div class="row g-2 mb-3">
+                  {% for cat, itm in outfit.get_items() %}
+                  <div class="col-4 text-center">
+                    <div class="p-2 border rounded-3 bg-light-subtle" style="height: 70px; display: flex; align-items: center; justify-content: center;">
+                      <img src="{{ url_for('static', filename=itm.image_path) }}" alt="{{ itm.name }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                    <small class="d-block text-truncate small mt-1 text-muted">{{ itm.name }}</small>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-3">
+                <span class="small text-muted"><i class="fa-regular fa-calendar me-1"></i> {{ outfit.created_at.strftime('%b %d, %Y') }}</span>
+                <form action="{{ url_for('favorites_remove', fav_type='outfit', item_id=outfit.id) }}" method="POST">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">
+                    <i class="fa-solid fa-trash-can me-1"></i> Remove
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+          <div class="stat-icon purple mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <h5 class="fw-bold mb-1">No Saved Outfits Yet</h5>
+          <p class="text-secondary small mb-3">Use <em>"My Style"</em> or <em>"AI Outfit Generator"</em> and hit <strong>"Save Outfit"</strong> to preserve complete ensembles.</p>
+          <a href="{{ url_for('style') }}" class="btn btn-primary-gradient btn-sm">Style An Outfit</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/wardrobe.js') }}"></script>
+{% endblock %}
